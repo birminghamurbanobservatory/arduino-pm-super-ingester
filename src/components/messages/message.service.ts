@@ -49,7 +49,7 @@ const messageSchema = joi.object({
 
 export function validateMessage(message: RawMessage): void {
 
-  const {error: err} = joi.validate(message, messageSchema);
+  const {error: err} = messageSchema.validate(message);
 
   if (err) {
     throw new Error(`Invalid message: ${err.message}`);
@@ -83,11 +83,12 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   const resultTime = decodedMessage.time.toISOString();
 
   const prefix = 'arduino-pm';
+  const sensorIdLowercase = decodedMessage.device.toLowerCase();
 
   // Temp
   if (decodedMessage.data.temp) {
     const tempObs = {
-      madeBySensor: `${prefix}-${decodedMessage.device}-thermistor`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-thermistor`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.temp,
@@ -101,20 +102,78 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
 
   // Humidity
   if (decodedMessage.data.humid) {
-    const tempObs = {
-      madeBySensor: `${prefix}-${decodedMessage.device}-hygrometer`,
+    const humidObs = {
+      madeBySensor: `${prefix}-${sensorIdLowercase}-hygrometer`,
       resultTime,
       hasResult: {
-        value: decodedMessage.data.temp,
+        value: decodedMessage.data.humid,
         unit: 'percent'
       },
       observedProperty: 'relative-humidity',
       aggregation: 'instant'
     };
-    observations.push(tempObs);
+    observations.push(humidObs);
   }
 
-  // TODO: Need to add PM variables to list of observed properties in common vocab first.
+  // PM1
+  if (decodedMessage.data.humid) {
+    const pm1Obs = {
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      resultTime,
+      hasResult: {
+        value: decodedMessage.data.pm1,
+        unit: 'microgram-per-cubic-metre'
+      },
+      observedProperty: 'pm1-mass-concentration',
+      aggregation: 'instant'
+    };
+    observations.push(pm1Obs);
+  }
+
+  // PM2.5
+  if (decodedMessage.data.humid) {
+    const pm25Obs = {
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      resultTime,
+      hasResult: {
+        value: decodedMessage.data.pm25,
+        unit: 'microgram-per-cubic-metre'
+      },
+      observedProperty: 'pm2p5-mass-concentration',
+      aggregation: 'instant'
+    };
+    observations.push(pm25Obs);
+  }
+
+  // PM10
+  if (decodedMessage.data.humid) {
+    const pm10Obs = {
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      resultTime,
+      hasResult: {
+        value: decodedMessage.data.pm10,
+        unit: 'microgram-per-cubic-metre'
+      },
+      observedProperty: 'pm10-mass-concentration',
+      aggregation: 'instant'
+    };
+    observations.push(pm10Obs);
+  }
+
+  // RSSI
+  if (decodedMessage.rssi) {
+    const tempObs = {
+      madeBySensor: `${prefix}-${sensorIdLowercase}-basestation`,
+      resultTime,
+      hasResult: {
+        value: decodedMessage.rssi,
+        unit: 'decibel'
+      },
+      observedProperty: 'received-signal-strength-indicator',
+      aggregation: 'instant'
+    };
+    observations.push(tempObs);
+  }
 
   return observations;
 

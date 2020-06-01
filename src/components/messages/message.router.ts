@@ -18,7 +18,15 @@ router.use('/messages', checkApiKey);
 //-------------------------------------------------
 router.post('/messages', asyncWrapper(async (req, res): Promise<any> => {
 
-  const response = await incomingMessageController(req.body);
+  let response;
+  try {
+    response = await incomingMessageController(req.body);
+
+  } catch (err) {
+    // When we fail to process the message we don't really want Sigfox to send it again, because chances are it will fail again, therefore we'll send a 202 message to signify that we failed to process it, but because it is a 2xx it won't try to send the callback again.
+    logger.error(err);
+    return res.status(202).send(err.message);
+  }
 
   return res.send(response);
 

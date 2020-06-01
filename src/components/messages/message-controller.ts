@@ -7,7 +7,6 @@ export async function incomingMessageController(message: RawMessage): Promise<st
 
   // validate the message
   validateMessage(message);
-  // TODO: need to handle when this errors as I probably want to return a 202 so that it doesn't resend. Need to decide where this should be handled. E.g. here, router, or in handle-errors.ts
 
   const decoded = decodeMessage(message);
 
@@ -15,7 +14,7 @@ export async function incomingMessageController(message: RawMessage): Promise<st
   const observations = decodedMessageToObservations(decoded);
 
   // Send the observations to the event-stream
-  publishObservations(observations);
+  await publishObservations(observations);
 
   return 'Message successfully received';
 
