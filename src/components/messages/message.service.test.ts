@@ -4,14 +4,14 @@ describe('Testing of decodeArduinoPmHexString function', () => {
 
   test('Converts a typical hex string as expected', () => {
     
-    const hexString = '5515a784c107c107c1070000';
+    const hexString = '9a1d4c5c0c09ed0c830f0000';
 
     const expected = {
-      temp: 20,
-      humid: 57,
-      pm1: 6, 
-      pm25: 6,
-      pm10: 6
+      temp: 27.75,
+      humid: 39.66,
+      pm1: 7, 
+      pm25: 10,
+      pm10: 12
     };
 
     const dataOut = decodeArduinoPmHexString(hexString);
@@ -30,7 +30,7 @@ describe('Testing of decodeMessage function', () => {
     
     const message = {
       device: '123ABC',
-      data: '5515a784c107c107c1070000',
+      data: '9a1d4c5c0c09ed0c830f0000',
       time: 1535451492  
     };
 
@@ -38,16 +38,16 @@ describe('Testing of decodeMessage function', () => {
       device: '123ABC',
       time: new Date('2018-08-28T10:18:12.000Z'),
       data: {
-        temp: 20,
-        humid: 57,
-        pm1: 6, 
-        pm25: 6,
-        pm10: 7
+        temp: 27.75,
+        humid: 39.66,
+        pm1: 7, 
+        pm25: 10,
+        pm10: 12
       }
     };
 
     const decoded = decodeMessage(message);
-    expect(decoded).toEqual(decoded);
+    expect(decoded).toEqual(expected);
 
   });
 
@@ -56,7 +56,7 @@ describe('Testing of decodeMessage function', () => {
     
     const message = {
       device: '123ABC',
-      data: '5515a784c107c107c1070000',
+      data: '9a1d4c5c0c09ed0c830f0000',
       time: 1535451492,
       rssi: -101  
     };
@@ -66,16 +66,16 @@ describe('Testing of decodeMessage function', () => {
       time: new Date('2018-08-28T10:18:12.000Z'),
       rssi: -101,
       data: {
-        temp: 20,
-        humid: 57,
-        pm1: 6, 
-        pm25: 6,
-        pm10: 6
+        temp: 27.75,
+        humid: 39.66,
+        pm1: 7, 
+        pm25: 10,
+        pm10: 12
       }
     };
 
     const decoded = decodeMessage(message);
-    expect(decoded).toEqual(decoded);
+    expect(decoded).toEqual(expected);
 
   });
 
@@ -110,7 +110,7 @@ describe('Testing of decodedMessageToObservations function', () => {
           value: 20,
           unit: 'degree-celsius'
         },
-        madeBySensor: 'arduino-pm-123abc-thermistor', // note that the sigfox ID is made all lowercase
+        madeBySensor: 'arduino-pm-123abc-sht85', // note that the sigfox ID is made all lowercase
         observedProperty: 'air-temperature',
         aggregation: 'instant'
       },
@@ -120,7 +120,7 @@ describe('Testing of decodedMessageToObservations function', () => {
           value: 57,
           unit: 'percent'
         },
-        madeBySensor: 'arduino-pm-123abc-hygrometer', // note that the sigfox ID is made all lowercase
+        madeBySensor: 'arduino-pm-123abc-sht85', // note that the sigfox ID is made all lowercase
         observedProperty: 'relative-humidity',
         aggregation: 'instant'
       },
@@ -130,7 +130,7 @@ describe('Testing of decodedMessageToObservations function', () => {
           value: 5,
           unit: 'microgram-per-cubic-metre'
         },
-        madeBySensor: 'arduino-pm-123abc-pm-sensor', // note that the sigfox ID is made all lowercase
+        madeBySensor: 'arduino-pm-123abc-pms5003', // note that the sigfox ID is made all lowercase
         observedProperty: 'pm1-mass-concentration',
         aggregation: 'instant'
       },
@@ -140,7 +140,7 @@ describe('Testing of decodedMessageToObservations function', () => {
           value: 6,
           unit: 'microgram-per-cubic-metre'
         },
-        madeBySensor: 'arduino-pm-123abc-pm-sensor', // note that the sigfox ID is made all lowercase
+        madeBySensor: 'arduino-pm-123abc-pms5003', // note that the sigfox ID is made all lowercase
         observedProperty: 'pm2p5-mass-concentration',
         aggregation: 'instant'
       },
@@ -150,7 +150,7 @@ describe('Testing of decodedMessageToObservations function', () => {
           value: 7,
           unit: 'microgram-per-cubic-metre'
         },
-        madeBySensor: 'arduino-pm-123abc-pm-sensor', // note that the sigfox ID is made all lowercase
+        madeBySensor: 'arduino-pm-123abc-pms5003', // note that the sigfox ID is made all lowercase
         observedProperty: 'pm10-mass-concentration',
         aggregation: 'instant'
       },

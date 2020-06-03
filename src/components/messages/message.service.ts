@@ -88,7 +88,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   // Temp
   if (decodedMessage.data.temp) {
     const tempObs = {
-      madeBySensor: `${prefix}-${sensorIdLowercase}-thermistor`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-sht85`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.temp,
@@ -103,7 +103,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   // Humidity
   if (decodedMessage.data.humid) {
     const humidObs = {
-      madeBySensor: `${prefix}-${sensorIdLowercase}-hygrometer`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-sht85`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.humid,
@@ -118,7 +118,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   // PM1
   if (decodedMessage.data.humid) {
     const pm1Obs = {
-      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.pm1,
@@ -133,7 +133,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   // PM2.5
   if (decodedMessage.data.humid) {
     const pm25Obs = {
-      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.pm25,
@@ -148,7 +148,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
   // PM10
   if (decodedMessage.data.humid) {
     const pm10Obs = {
-      madeBySensor: `${prefix}-${sensorIdLowercase}-pm-sensor`,
+      madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
         value: decodedMessage.data.pm10,
