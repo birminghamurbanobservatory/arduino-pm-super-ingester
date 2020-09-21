@@ -8,7 +8,7 @@ import * as joi from '@hapi/joi';
 // Validation Schema
 //-------------------------------------------------
 const schema = joi.object({
-  SIGFOX_API_KEY: joi.string()
+  API_KEY: joi.string()
     .required()
 }).unknown() // allows for extra fields (i.e that we don't check for) in the object being checked.
   .required();
@@ -30,7 +30,7 @@ if (err) {
 // Create config object
 //-------------------------------------------------
 // Pull out the properties we need to create this particular config object. 
-export const sigfox = {
-  apiKey: envVars.SIGFOX_API_KEY
+export const api = {
+  key: envVars.API_KEY
 };
 

@@ -11,7 +11,7 @@ const env = config.common.env;
 export function handleRouteErrors(err, req, res, next): void {
 
   const inDevMode = env === 'development';
-
+  
   //-------------------------------------------------
   // Operational Errors
   //-------------------------------------------------

@@ -9,6 +9,6 @@ export interface MessageData {
   temp: number;
   humid: number;
   pm1: number;
-  pm25: number;
+  pm2p5: number;
   pm10: number;
 }

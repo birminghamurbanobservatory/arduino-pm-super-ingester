@@ -8,7 +8,8 @@ import * as event from 'event-stream';
 import * as logger from 'node-logger';
 import {config} from '../config';
 import * as check from 'check-types';
-
+import * as MongodbMemoryServer from 'mongodb-memory-server';
+import {connectDb, disconnectDb} from '../db/mongodb-service';
 
 //-------------------------------------------------
 // Mocks
@@ -16,8 +17,12 @@ import * as check from 'check-types';
 jest.mock('event-stream');
 
 
+//-------------------------------------------------
+// Tests
+//-------------------------------------------------
 describe('Testing messages endpoint', () => {
 
+  let mongoServer;
   let request;
 
   beforeAll(() => {
@@ -29,11 +34,23 @@ describe('Testing messages endpoint', () => {
     // Load our express.js app
     const app = require('../server').app;
     request = supertest(app);
+    // Create fresh database
+    mongoServer = new MongodbMemoryServer.MongoMemoryServer();
+    return mongoServer.getConnectionString()
+    .then((url) => {
+      return connectDb(url);
+    });
   });
 
   afterEach(() => {
     // Reset mock.calls and mock.instances properties of all mocks
     jest.clearAllMocks();
+    // Disconnect from, then stop, database.
+    return disconnectDb()
+    .then(() => {
+      mongoServer.stop();
+      return;
+    });
   });
 
 
@@ -47,7 +64,7 @@ describe('Testing messages endpoint', () => {
     const response = await request
     .post('/messages')
     .set('Accept', 'application/json')
-    .set('Authorization', `apiKey ${config.sigfox.apiKey}`)
+    .set('x-api-key', config.api.key)
     .send({
       device: '123456',
       data: '5515a784c107c107c1070000',
@@ -74,7 +91,7 @@ describe('Testing messages endpoint', () => {
     const response = await request
     .post('/messages')
     .set('Accept', 'application/json')
-    .set('Authorization', `apiKey ${config.sigfox.apiKey}`)
+    .set('x-api-key', config.api.key)
     .send({
       foobar: '123456',
       data: '222',

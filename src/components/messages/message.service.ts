@@ -1,8 +1,10 @@
-import {round} from 'lodash';
+import {round, cloneDeep} from 'lodash';
 import * as joi from '@hapi/joi';
 import {RawMessage} from './raw-message';
 import {DecodedMessage, MessageData} from './decoded-message';
 import * as check from 'check-types';
+import {Calibration} from '../device/calibration.interface';
+import {DeviceApp} from '../device/device-app.interface';
 
 
 export function decodeArduinoPmHexString(hexString: string): MessageData {
@@ -11,7 +13,7 @@ export function decodeArduinoPmHexString(hexString: string): MessageData {
     temp: round(int16ToFloat(converter16bit(hexString.slice(0, 4)), 60, -60), 2),
     humid: round(uint16ToFloat(converter16bit(hexString.slice(4, 8)), 110), 2),
     pm1:round(int16ToFloat(converter16bit(hexString.slice(8, 12)), 100, 1), 2),
-    pm25:round(int16ToFloat(converter16bit(hexString.slice(12, 16)), 100, 1), 2),
+    pm2p5:round(int16ToFloat(converter16bit(hexString.slice(12, 16)), 100, 1), 2),
     pm10:round(int16ToFloat(converter16bit(hexString.slice(16, 20)), 100, 1), 2),
   };
 
@@ -39,6 +41,11 @@ function uint16ToFloat(value: number, max: number): number {
 }
 
 
+export function applyCalibration(uncorrectedValue: number, calibration: Calibration): number {
+  const correctedValue = (calibration.m * uncorrectedValue) + calibration.c;
+  return correctedValue;
+}
+
 
 const messageSchema = joi.object({
   device: joi.string().required(),
@@ -62,7 +69,7 @@ export function validateMessage(message: RawMessage): void {
 export function decodeMessage(message: RawMessage): DecodedMessage {
 
   const decoded: any = {
-    device: message.device,
+    device: message.device.toLowerCase(),
     data: decodeArduinoPmHexString(message.data),
     time: new Date(message.time * 1000)
   };
@@ -76,7 +83,20 @@ export function decodeMessage(message: RawMessage): DecodedMessage {
 }
 
 
-export function decodedMessageToObservations(decodedMessage: DecodedMessage): any[] {
+export function decodedMessageToObservations(decodedMessage: DecodedMessage, deviceOnRecord?: DeviceApp): any[] {
+
+  let pm1Calibration;
+  let pm2p5Calibration;
+  let pm10Calibration;
+
+  if (deviceOnRecord) {
+    if (deviceOnRecord.pm1) pm1Calibration = deviceOnRecord.pm1;
+    if (deviceOnRecord.pm2p5) pm2p5Calibration = deviceOnRecord.pm2p5;
+    if (deviceOnRecord.pm10) pm10Calibration = deviceOnRecord.pm10;    
+  }
+
+  const uncorrectedFlag = 'raw';
+  const calibrationProcedure = 'arduino-pm-calibration-correction';
 
   const observations = [];
   
@@ -117,7 +137,8 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
 
   // PM1
   if (decodedMessage.data.humid) {
-    const pm1Obs = {
+
+    const pm1Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
@@ -127,27 +148,58 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
       observedProperty: 'pm1-mass-concentration',
       aggregation: 'instant'
     };
+
+    if (pm1Calibration) {
+
+      // Create a corrected observation too
+      const pm1ObsCorrected = cloneDeep(pm1Obs);
+      pm1ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm1, pm1Calibration), 2);
+      pm1ObsCorrected.usedProcedures = [calibrationProcedure];
+      observations.push(pm1ObsCorrected);
+
+      // Flag the uncorrected observation. N.B. if there's no calibration on record then no flag will be added.
+      pm1Obs.hasResult.flags = [uncorrectedFlag];
+
+    }
+
     observations.push(pm1Obs);
   }
 
   // PM2.5
   if (decodedMessage.data.humid) {
-    const pm25Obs = {
+
+    const pm2p5Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
-        value: decodedMessage.data.pm25,
+        value: decodedMessage.data.pm2p5,
         unit: 'microgram-per-cubic-metre'
       },
       observedProperty: 'pm2p5-mass-concentration',
       aggregation: 'instant'
     };
-    observations.push(pm25Obs);
+
+    if (pm2p5Calibration) {
+
+      // Create a corrected observation too
+      const p2p5ObsCorrected = cloneDeep(pm2p5Obs);
+      p2p5ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm2p5, pm2p5Calibration), 2);
+      p2p5ObsCorrected.usedProcedures = [calibrationProcedure];
+      observations.push(p2p5ObsCorrected);
+
+      // Flag the uncorrected observation. N.B. if there's no calibration on record then no flag will be added.
+      pm2p5Obs.hasResult.flags = [uncorrectedFlag];
+
+    }
+
+    observations.push(pm2p5Obs);
+
   }
 
   // PM10
   if (decodedMessage.data.humid) {
-    const pm10Obs = {
+
+    const pm10Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
       resultTime,
       hasResult: {
@@ -157,6 +209,20 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage): an
       observedProperty: 'pm10-mass-concentration',
       aggregation: 'instant'
     };
+
+    if (pm10Calibration) {
+
+      // Create a corrected observation too
+      const p10ObsCorrected = cloneDeep(pm10Obs);
+      p10ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm10, pm10Calibration), 2);
+      p10ObsCorrected.usedProcedures = [calibrationProcedure];
+      observations.push(p10ObsCorrected);
+
+      // Flag the uncorrected observation. N.B. if there's no calibration on record then no flag will be added.
+      pm10Obs.hasResult.flags = [uncorrectedFlag];
+
+    }
+
     observations.push(pm10Obs);
   }
 

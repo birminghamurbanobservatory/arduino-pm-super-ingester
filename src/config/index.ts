@@ -6,8 +6,8 @@ dotenv.config();
 import * as common from './components/common';
 import * as logger from './components/logger';
 import * as events from './components/events';
-import * as sigfox from './components/sigfox';
+import * as api from './components/api';
 
 // Export
-export const config = Object.assign({}, common, logger, events, sigfox);
+export const config = Object.assign({}, common, logger, events, api);
 

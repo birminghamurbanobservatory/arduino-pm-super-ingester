@@ -19,6 +19,7 @@ router.use('/messages', checkApiKey);
 router.post('/messages', asyncWrapper(async (req, res): Promise<any> => {
 
   let response;
+
   try {
     response = await incomingMessageController(req.body);
 

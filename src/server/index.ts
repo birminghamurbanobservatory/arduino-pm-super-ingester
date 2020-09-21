@@ -7,6 +7,7 @@ import morgan = require('morgan');
 import * as logger from 'node-logger';
 import {logRouteErrors} from './log-errors';
 import {handleRouteErrors} from './handle-errors';
+import {DeviceRouter} from '../components/device/device.router';
 
 export const app = express();
 
@@ -54,6 +55,7 @@ app.use('/', (err, req, res, next) => {
 
 // Routers
 app.use(MessageRouter);
+app.use(DeviceRouter);
 
 
 // Error handling must go last

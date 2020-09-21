@@ -6,8 +6,7 @@ import * as logger from 'node-logger';
 import {Unauthorized} from '../../errors/Unauthorized';
 import {InvalidApiKey} from '../../errors/InvalidApiKey';
 
-const apiKey = config.sigfox.apiKey;
-
+const apiKey = config.api.key;
 
 //-------------------------------------------------
 // Check API Key
@@ -16,27 +15,25 @@ export function checkApiKey(req, res, next): any {
 
   logger.debug('Checking API Key');
 
+  const sentKey = req.headers['x-api-key'];
+
   // Check if an apiKey is present in the authorization header
-  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'apiKey') {
+  if (!sentKey) {
+    logger.debug('No api key provided');
+    return next(new Unauthorized('You must provide an API Key as the value of the x-api-key header'));
+  }
 
-    const sentKey = req.headers.authorization.split(' ')[1];
+  // Does the key sent by the request match the one we have on record?
+  if (sentKey === apiKey) {
 
-    // Does the key sent by the request match the one we have on record?
-    if (sentKey === apiKey) {
-
-      logger.debug('apiKey is valid');
-      next();
-
-    } else {
-
-      logger.debug('apiKey is invalid');
-      return next(new InvalidApiKey(`Invalid API Key: '${sentKey}'`));
-
-    }
+    logger.debug('apiKey is valid');
+    next();
 
   } else {
-    logger.debug('No apiKey present');
-    return next(new Unauthorized('You must provide an apiKey in the Authorization header, e.g. Authorization: apiKey abc123'));
+
+    logger.debug('apiKey is invalid');
+    return next(new InvalidApiKey(`Invalid API Key: '${sentKey}'`));
+
   }
-  
+
 }
