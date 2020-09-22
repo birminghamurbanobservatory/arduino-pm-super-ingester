@@ -13,6 +13,9 @@ export {router as RootRouter};
 //-------------------------------------------------
 router.get('/', asyncWrapper(async (req, res): Promise<any> => {
 
-  return res.sendFile(path.join(`${__dirname}/root.html`));
+  // This is a bit of cheat to save me having to copy over the .html file into the dist directory.
+  const filePath = path.join(__dirname, '../../../src/components/root/root.html');
+
+  return res.sendFile(filePath);
 
 }));
