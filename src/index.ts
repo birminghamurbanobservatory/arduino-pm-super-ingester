@@ -8,6 +8,7 @@ const appName = require('../package.json').name; // Annoyingly if i use import h
 import {app} from './server';
 import {initialiseEvents} from './events/initialise-events';
 import {getCorrelationId} from './utils/correlator';
+import {connectDb} from './db/mongodb-service';
 
 
 //-------------------------------------------------
@@ -17,10 +18,21 @@ logger.configure(Object.assign({}, config.logger, {getCorrelationId}));
 logger.warn(`${appName} restarted`);
 
 
-//-------------------------------------------------
-// Event stream
-//-------------------------------------------------
 (async (): Promise<void> => {
+
+  //-------------------------------------------------
+  // Database
+  //-------------------------------------------------
+  try {
+    await connectDb(config.mongo.uri);
+    logger.info('Initial connection to MongoDB database was successful');
+  } catch (err) {
+    logger.error(`Initial MongoDB database connection failed: ${err.message}`);
+  }
+
+  //-------------------------------------------------
+  // Event stream
+  //-------------------------------------------------
   try {
     await initialiseEvents({
       url: config.events.url,
@@ -31,6 +43,7 @@ logger.warn(`${appName} restarted`);
     logger.error('There was an issue whilst initialising events.', err);
   }
   return;
+
 })();
 
 

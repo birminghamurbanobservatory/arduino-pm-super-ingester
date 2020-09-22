@@ -6,7 +6,7 @@ import {asyncWrapper} from '../../utils/async-wrapper';
 import {checkApiKey} from '../common/check-api-key';
 import * as joi from '@hapi/joi';
 import {InvalidBody} from '../../errors/InvalidBody';
-import {getDevices, updateDevice} from './device.controller';
+import {getDevice, getDevices, updateDevice} from './device.controller';
 
 const router = express.Router();
 
@@ -20,12 +20,24 @@ router.use('/devices', checkApiKey);
 
 
 //-------------------------------------------------
+// Get single device
+//-------------------------------------------------
+router.get('/devices/:deviceId', asyncWrapper(async (req, res): Promise<any> => {
+ 
+  const deviceId = req.params.deviceId;
+  const response = await getDevice(deviceId);
+  return res.json(response);
+
+}));
+
+
+//-------------------------------------------------
 // Insert/Update Device
 //-------------------------------------------------
 const calibrationSchema = joi.object({
   m: joi.number().required(),
   c: joi.number().required()
-});
+}).allow(null);
 
 const updateDeviceBodySchema = joi.object({
   pm1: calibrationSchema,

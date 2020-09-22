@@ -117,6 +117,97 @@ describe('End to end testing of the devices', () => {
   });
 
 
+  test('Get details of a single device', async() => {
+
+    expect.assertions(1);
+
+    // Create an initial record in the database
+    const deviceId = '123abc';
+    const messageTime = new Date('2020-09-21T17:07:33.826Z');
+    await upsertDevice(deviceId, {
+      lastMessageAt: messageTime,
+      pm1: {
+        m: 1.1,
+        c: 0.2
+      },
+      pm2p5: {
+        m: 1,
+        c: -0.12
+      },
+      pm10: {
+        m: 0.99,
+        c: -0.1
+      }
+    });
+
+    const response = await request
+    .get('/devices/123abc')
+    .set('Accept', 'application/json')
+    .set('x-api-key', config.api.key)
+    .expect(200);
+
+    expect(response.body).toEqual({
+      id: deviceId,
+      lastMessageAt: messageTime.toISOString(),
+      pm1: {
+        m: 1.1,
+        c: 0.2
+      },
+      pm2p5: {
+        m: 1,
+        c: -0.12
+      },
+      pm10: {
+        m: 0.99,
+        c: -0.1
+      }
+    });
+
+  });
+
+
+  test('A user should be able to unset m and c values through the API', async () => {
+    
+    expect.assertions(1);
+
+    // Create an initial record in the database
+    const deviceId = '123abc';
+    const messageTime = new Date('2020-09-21T17:07:33.826Z');
+    await upsertDevice(deviceId, {
+      lastMessageAt: messageTime,
+      pm1: {
+        m: 1.1,
+        c: 0.2
+      },
+      pm10: {
+        m: 0.99,
+        c: -0.1
+      }
+    });
+
+    const updateDeviceResponse = await request
+    .post('/devices/123abc')
+    .set('Accept', 'application/json')
+    .set('x-api-key', config.api.key)
+    .send({
+      pm1: null
+    })
+    .expect(200);
+
+    const updatedDevice = updateDeviceResponse.body;
+    expect(updatedDevice).toEqual({
+      id: deviceId,
+      lastMessageAt: messageTime.toISOString(),
+      // pm1 should no longer be in here
+      pm10: {
+        m: 0.99,
+        c: -0.1
+      }
+    });
+    
+  });
+
+
   test('User should be able to create a new device through the API', async () => {
 
     // I.e. before any messages have come through for it yet.
@@ -214,7 +305,6 @@ describe('End to end testing of the devices', () => {
 
     const response = await request
     .get('/devices')
-    .set('Accept', 'application/json')
     .set('x-api-key', config.api.key)
     .expect(200);
 
@@ -230,6 +320,26 @@ describe('End to end testing of the devices', () => {
         lastMessageAt: '2020-09-21T17:07:33.826Z'
       }
     ]);
+
+  });
+
+
+
+  test('Make sure the device list is only accessible with a api key', async () => {
+
+    await request
+    .get('/devices')
+    .expect(401);
+
+  });
+
+
+  test('Make sure the device list is only accessible with a valid api key', async () => {
+  
+    await request
+    .get('/devices')
+    .set('x-api-key', 'wrong-api-key')
+    .expect(403);
 
   });
 

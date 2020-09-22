@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PM Ingester</title>
+
+  <style>
+    section {
+      margin: 30px 10px;
+    }
+    h1 {
+      color: #333333;
+    }
+    h2 {
+      color: #4f4e79;
+    }
+  </style>
+
+</head>
+<body>
+  
+  <h1 style="text-align: center;">Arduino PM Super Ingester</h1>
+
+  <section>
+    <p style="text-align: center;">The role of this microservice is to receive data from Arduino PM sensors via Sigfox callbacks and feed the observations into the Urban Observatory system. It's also possible to configure and apply calibration corrections to the readings.</p>
+  </section>
+
+  <section>
+    <h2>Sigfox callbacks</h2>
+    <p>This microservice exposes a HTTP endpoint for receiving callbacks from the Sigfox backend.</p>
+    <p>Within the Sigfox backend you will need to configure the callback as follows:</p>
+    <p>Set <em>Type</em> to <strong>DATA</strong> and <strong>UPLINK</strong>.</p>
+    <p>Set <em>Channel</em> as <strong>URL</strong></p>
+    <p>Set the <em>Url pattern</em> as <strong id="callbackUrl"></strong></p>
+    <p>Set the <em>Use HTTP Method</em> as <strong>POST</strong>.</p>
+    <p>Add a <strong>x-api-key</strong> header with value that matches the API key set for this microservice.</p>
+    <p><em>Content type</em> should be <strong>application/json</strong></p>
+    <p>The body needs at least these fields:</p>
+    <pre>
+      {
+        "device" : "{device}",
+        "data" : "{data}",
+        "time" : {time},
+      }
+    </pre>
+  </section>
+
+  <section>
+    <h2>Get a list of devices</h2>
+    <p>A list of devices is available using a GET request to <a href="/devices">/devices</a></p>
+    <p>You will need to provide the API key as the <em>x-api-key</em> header.</p>
+    <p>This lists all the devices held is the database of this microservice. Devices are added or updated every time a callback from that device is received from Sigfox. A device is also added or updated whenever you specify calibration corrections as detailed below.</p>
+  </section>
+
+  <section>
+    <h2>Get a single device</h2>
+    <p>Make a GET request to <a href="/devices/enter-device-id-here">/devices/enter-device-id-here</a>, replacing <em>enter-device-id-here</em> with the ID of the Device, e.g. <em>/devices/2AB3CE</em>.</p>
+    <p>You will need to provide the API key as the <em>x-api-key</em> header.</p>
+  </section>
+
+  <section>
+    <h2>Updating a device's calibration corrections</h2>
+    <p>The Particulate Matter readings can be corrected based on calibration results.</p>
+    <p>The formula used is: <strong>corrected = (m * raw) + c</strong></p>
+    <p>So if m was 1 and c was 0 then the corrected value would be the same as the raw value.</p>
+    <p>Set the m and c values by sending a <strong>POST</strong> request to <a href="/devices/enter-device-id-here">/devices/enter-device-id-here</a>. Replace <em>enter-device-id-here</em> with the ID of the Device you wish to configure e.g. <em>/devices/2AB3CE</em></p>
+    <p>Be sure to provide the API key as the <em>x-api-key</em> header.</p>
+    <p>And set the <em>Content-Type</em> header as <strong>application/json</strong></p>
+    <p>The POST request body should look something like this:</p>
+    <pre>
+      {
+        "pm1": {"m": 1, "c": 0.2},
+        "pm2p5": {"m": 1.1, "c": 0.01},
+        "pm10": {"m": 1.11, "c": -0.01},
+      }
+    </pre>
+    <p>N.B. you don't have to specify corrections for all of them.</p>
+    <p>If you ever want to stop corrections being applied then set them to <em>null</em>, for example:</p>
+    <pre>
+      {
+        "pm1": null,
+        "pm2p5": null,
+        "pm10": null
+      }
+    </pre>
+
+  </section>
+
+
+  <script>
+    document.getElementById("callbackUrl").innerHTML = window.location.href + "messages";
+  </script>
+
+</body>
+</html>

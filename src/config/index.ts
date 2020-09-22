@@ -7,7 +7,8 @@ import * as common from './components/common';
 import * as logger from './components/logger';
 import * as events from './components/events';
 import * as api from './components/api';
+import * as mongo from './components/mongo';
 
 // Export
-export const config = Object.assign({}, common, logger, events, api);
+export const config = Object.assign({}, common, logger, events, api, mongo);
 

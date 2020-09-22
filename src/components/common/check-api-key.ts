@@ -27,7 +27,7 @@ export function checkApiKey(req, res, next): any {
   if (sentKey === apiKey) {
 
     logger.debug('apiKey is valid');
-    next();
+    return next();
 
   } else {
 

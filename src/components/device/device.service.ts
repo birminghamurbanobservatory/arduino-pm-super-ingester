@@ -5,7 +5,8 @@ import {GetDevicesFail} from './errors/GetDevicesFail';
 import {UpsertDeviceFail} from './errors/UpsertDeviceFail';
 import {DeviceNotFound} from './errors/DeviceNotFound';
 import {Calibration} from './calibration.interface';
-
+import {cloneDeep} from 'lodash';
+import * as check from 'check-types';
 
 
 export async function getDevice(id: string): Promise<DeviceApp> {
@@ -33,8 +34,19 @@ export async function upsertDevice(id: string, updates: {lastMessageAt?: Date; p
 
   let device;
 
+  // Change null values to unset
+  const updatesWithUnset: any = cloneDeep(updates);
+  updatesWithUnset.$unset = {};
+  const keys = ['pm1', 'pm2p5', 'pm10'];
+  keys.forEach((key) => {
+    if (check.null(updatesWithUnset[key])) {
+      updatesWithUnset.$unset[key] = '';
+      delete updatesWithUnset[key];
+    }
+  });
+
   try {
-    device = await Device.findByIdAndUpdate(id, updates, {new: true, upsert: true, setDefaultsOnInsert: true}).exec();
+    device = await Device.findByIdAndUpdate(id, updatesWithUnset, {new: true, upsert: true, setDefaultsOnInsert: true}).exec();
   } catch (err) {
     throw new UpsertDeviceFail(undefined, err.message);
   }

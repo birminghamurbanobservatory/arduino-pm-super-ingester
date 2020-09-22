@@ -105,5 +105,54 @@ describe('Testing messages endpoint', () => {
   });
 
 
+  test('Testing end-to-end from message received to event published (with calibration applied)', async () => {
+
+    expect.assertions(3); // Supertest's .expect()'s don't count towards the total.
+
+    // event.publish returns a promise, so we use mockResolvedValue to specify the value the mock should return.
+    event.publish.mockResolvedValue();
+
+    const deviceId = 'abc123';
+
+    // Add some calibration settings
+    await request
+    .post(`/devices/${deviceId}`)
+    .set('Accept', 'application/json')
+    .set('x-api-key', config.api.key)
+    .send({
+      pm1: {
+        m: 1.2,
+        c: 0.3
+      },
+      pm2p5: {
+        m: 0.9,
+        c: 0.3
+      },
+      pm10: {
+        m: 1.1,
+        c: 0.2
+      }
+    })
+    .expect(200);
+
+    // Simulate new data from sigfox
+    const response = await request
+    .post('/messages')
+    .set('Accept', 'application/json')
+    .set('x-api-key', config.api.key)
+    .send({
+      device: deviceId,
+      data: '5515a784c107c107c1070000',
+      time: 1535451492    
+    })
+    .expect(200);
+    
+    expect(response.text).toBe('Message successfully received');
+    expect(event.publish.mock.calls.length).toBe(8); // i.e. one for each observed property + plus 3 corrected obs
+    expect(event.publish.mock.calls[0][0]).toBe('observation.incoming');
+    
+  });
+
+
 
 });

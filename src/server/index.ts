@@ -8,6 +8,7 @@ import * as logger from 'node-logger';
 import {logRouteErrors} from './log-errors';
 import {handleRouteErrors} from './handle-errors';
 import {DeviceRouter} from '../components/device/device.router';
+import {RootRouter} from '../components/root/root.router';
 
 export const app = express();
 
@@ -54,6 +55,7 @@ app.use('/', (err, req, res, next) => {
 
 
 // Routers
+app.use(RootRouter);
 app.use(MessageRouter);
 app.use(DeviceRouter);
 
@@ -65,5 +67,5 @@ app.use(handleRouteErrors);
 
 // Handle routes that don't exist (this must go at the end)
 app.use((req, res): any => {
-  return res.status(404).send('This API endpoint has not been defined.')
+  return res.status(404).send('This API endpoint has not been defined.');
 });
