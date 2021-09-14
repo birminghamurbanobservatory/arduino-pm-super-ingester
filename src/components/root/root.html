@@ -62,7 +62,7 @@
   <section>
     <h2>Updating a device's calibration corrections</h2>
     <p>The Particulate Matter readings can be corrected based on calibration results.</p>
-    <p>The formula used is: <strong>corrected = (m * raw) + c</strong></p>
+    <p>The formula used is: <strong>corrected = (raw - c) / m</strong></p>
     <p>So if m was 1 and c was 0 then the corrected value would be the same as the raw value.</p>
     <p>We store two sets of m and c values: 
     <ol>

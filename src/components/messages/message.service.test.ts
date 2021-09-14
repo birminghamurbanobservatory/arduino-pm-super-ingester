@@ -240,7 +240,7 @@ describe('Testing of decodedMessageToObservations function (with calibration)', 
       {
         resultTime: resultTimeIso,
         hasResult: {
-          value: 5.6,
+          value: 4.45,
           unit: 'microgram-per-cubic-metre'
         },
         madeBySensor: 'arduino-pm-123abc-pms5003',
@@ -265,7 +265,7 @@ describe('Testing of decodedMessageToObservations function (with calibration)', 
       {
         resultTime: resultTimeIso,
         hasResult: {
-          value: 5.3,
+          value: 6.78,
           unit: 'microgram-per-cubic-metre'
         },
         madeBySensor: 'arduino-pm-123abc-pms5003',
@@ -290,7 +290,7 @@ describe('Testing of decodedMessageToObservations function (with calibration)', 
       {
         resultTime: resultTimeIso,
         hasResult: {
-          value: 8.1,
+          value: 6.08,
           unit: 'microgram-per-cubic-metre'
         },
         madeBySensor: 'arduino-pm-123abc-pms5003',
@@ -337,10 +337,10 @@ describe('Testing of applyCalibration function', () => {
     const uncorrectedValue = 22.3;
     const humidityValue = 50;
     const calibration = {
-      lt85: {m: 1.1, c: 0.2},
-      gte85: {m: 1.2, c: 0.3}
+      lt85: {m: 1.1, c: 0.3},
+      gte85: {m: 1.2, c: 0.2}
     };
-    const expected = 24.73;
+    const expected = 20;
     const correctedValue = applyCalibration(uncorrectedValue, humidityValue, calibration);
     expect(correctedValue).toBe(expected);
 
@@ -351,16 +351,16 @@ describe('Testing of applyCalibration function', () => {
     const uncorrectedValue = 24.2;
     const humidityValue = 90;
     const calibration = {
-      lt85: {m: 1.1, c: 0.2},
-      gte85: {m: 1.2, c: 0.3}
+      lt85: {m: 1.1, c: 0.5},
+      gte85: {m: 1.2, c: 0.2}
     };
-    const expected = 29.34;
+    const expected = 20;
     const correctedValue = applyCalibration(uncorrectedValue, humidityValue, calibration);
     expect(correctedValue).toBe(expected);
 
   });
 
-  test('Applies y = 1x + 0 calibration correction correctly', () => {
+  test('Applies m = 1, c = 0 calibration correction correctly', () => {
     
     const uncorrectedValue = 22.3;
     const humidityValue = 50;

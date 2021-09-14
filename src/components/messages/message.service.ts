@@ -44,9 +44,9 @@ function uint16ToFloat(value: number, max: number): number {
 export function applyCalibration(uncorrectedValue: number, humidityValue: number, calibration: Calibration): number {
   let correctedValue;
   if (humidityValue < 85) {
-    correctedValue = (calibration.lt85.m * uncorrectedValue) + calibration.lt85.c;
+    correctedValue = (uncorrectedValue - calibration.lt85.c) / calibration.lt85.m;
   } else {
-    correctedValue = (calibration.gte85.m * uncorrectedValue) + calibration.gte85.c;
+    correctedValue = (uncorrectedValue - calibration.gte85.c) / calibration.gte85.m;
   }
   
   return correctedValue;
