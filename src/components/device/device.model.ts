@@ -8,14 +8,26 @@ import * as mongoose from 'mongoose';
 //-------------------------------------------------
 const calibrationSchema = new mongoose.Schema({
   // Calibration correction values, i.e. for "Correct Reading" = m("Erroneous Reading") + c
-  m: {
-    type: Number,
-    required: true
+  lt85: {
+    m: {
+      type: Number,
+      required: true
+    },
+    c: {
+      type: Number,
+      required: true
+    } 
   },
-  c: {
-    type: Number,
-    required: true
-  } 
+  gte85: {
+    m: {
+      type: Number,
+      required: true
+    },
+    c: {
+      type: Number,
+      required: true
+    }
+  }
 },
 {
   _id : false // don't want an id being added to these nested objects

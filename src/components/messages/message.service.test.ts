@@ -197,13 +197,22 @@ describe('Testing of decodedMessageToObservations function (with calibration)', 
     const deviceOnRecord: DeviceApp = {
       id: '123abc',
       lastMessageAt: new Date('2020-09-21T17:07:33.826Z'),
-      pm1: {m: 1.1, c: 0.1},
-      pm2p5: {m: 0.9, c: -0.1},
-      pm10: {m: 1.2, c: -0.3},
+      pm1: {
+        lt85: {m: 1.1, c: 0.1},
+        gte85: {m: 1.1, c: 0.2}
+      },
+      pm2p5: {
+        lt85: {m: 0.9, c: -0.1},
+        gte85: {m: 0.98, c: -0.1}
+      },
+      pm10: {
+        lt85: {m: 1.2, c: -0.3},
+        gte85: {m: 1.01, c: 0}
+      }
     };
 
     const uncorrectedFlag = 'raw';
-    const calibrationProcedure = 'arduino-pm-calibration-correction';
+    const calibrationProcedure = 'arduino-pm-calibration-correction-v2';
 
     const expected = [
       {
@@ -323,22 +332,44 @@ describe('Testing of decodedMessageToObservations function (with calibration)', 
 
 describe('Testing of applyCalibration function', () => {
 
-  test('Apply calibration correction correctly', () => {
+  test('Apply calibration correction correctly (lt85)', () => {
     
     const uncorrectedValue = 22.3;
-    const calibration = {m: 1.1, c: 0.2};
+    const humidityValue = 50;
+    const calibration = {
+      lt85: {m: 1.1, c: 0.2},
+      gte85: {m: 1.2, c: 0.3}
+    };
     const expected = 24.73;
-    const correctedValue = applyCalibration(uncorrectedValue, calibration);
-    expect(correctedValue).toBe(expected)
+    const correctedValue = applyCalibration(uncorrectedValue, humidityValue, calibration);
+    expect(correctedValue).toBe(expected);
+
+  });
+
+  test('Apply calibration correction correctly (gte85)', () => {
+    
+    const uncorrectedValue = 24.2;
+    const humidityValue = 90;
+    const calibration = {
+      lt85: {m: 1.1, c: 0.2},
+      gte85: {m: 1.2, c: 0.3}
+    };
+    const expected = 29.34;
+    const correctedValue = applyCalibration(uncorrectedValue, humidityValue, calibration);
+    expect(correctedValue).toBe(expected);
 
   });
 
   test('Applies y = 1x + 0 calibration correction correctly', () => {
     
     const uncorrectedValue = 22.3;
-    const calibration = {m: 1, c: 0};
+    const humidityValue = 50;
+    const calibration = {
+      lt85: {m: 1, c: 0},
+      gte85: {m: 1, c: 0}
+    };
     const expected = 22.3;
-    const correctedValue = applyCalibration(uncorrectedValue, calibration);
+    const correctedValue = applyCalibration(uncorrectedValue, humidityValue, calibration);
     expect(correctedValue).toBe(expected);
 
   });

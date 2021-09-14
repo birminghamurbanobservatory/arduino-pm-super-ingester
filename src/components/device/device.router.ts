@@ -35,8 +35,14 @@ router.get('/devices/:deviceId', asyncWrapper(async (req, res): Promise<any> => 
 // Insert/Update Device
 //-------------------------------------------------
 const calibrationSchema = joi.object({
-  m: joi.number().required(),
-  c: joi.number().required()
+  lt85: joi.object({
+    m: joi.number().required(),
+    c: joi.number().required()
+  }).required(),
+  gte85: joi.object({
+    m: joi.number().required(),
+    c: joi.number().required()
+  }).required(),
 }).allow(null);
 
 const updateDeviceBodySchema = joi.object({

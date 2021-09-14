@@ -98,8 +98,14 @@ describe('End to end testing of the devices', () => {
     .set('x-api-key', config.api.key)
     .send({
       pm1: {
-        m: 1.2,
-        c: 0.3
+        lt85: {
+          m: 1.2,
+          c: 0.3
+        },
+        gte85: {
+          m: 1.1,
+          c: 0.2
+        }
       }
     })
     .expect(200);
@@ -109,8 +115,14 @@ describe('End to end testing of the devices', () => {
       id: deviceId,
       lastMessageAt: messageTime.toISOString(),
       pm1: {
-        m: 1.2,
-        c: 0.3
+        lt85: {
+          m: 1.2,
+          c: 0.3
+        },
+        gte85: {
+          m: 1.1,
+          c: 0.2
+        }
       }
     });
     
@@ -127,17 +139,17 @@ describe('End to end testing of the devices', () => {
     await upsertDevice(deviceId, {
       lastMessageAt: messageTime,
       pm1: {
-        m: 1.1,
-        c: 0.2
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
       },
       pm2p5: {
-        m: 1,
-        c: -0.12
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
       },
       pm10: {
-        m: 0.99,
-        c: -0.1
-      }
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     });
 
     const response = await request
@@ -150,17 +162,17 @@ describe('End to end testing of the devices', () => {
       id: deviceId,
       lastMessageAt: messageTime.toISOString(),
       pm1: {
-        m: 1.1,
-        c: 0.2
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
       },
       pm2p5: {
-        m: 1,
-        c: -0.12
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
       },
       pm10: {
-        m: 0.99,
-        c: -0.1
-      }
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     });
 
   });
@@ -176,13 +188,25 @@ describe('End to end testing of the devices', () => {
     await upsertDevice(deviceId, {
       lastMessageAt: messageTime,
       pm1: {
-        m: 1.1,
-        c: 0.2
+        lt85: {
+          m: 1.2,
+          c: 0.3
+        },
+        gte85: {
+          m: 1.1,
+          c: 0.2
+        }
       },
       pm10: {
-        m: 0.99,
-        c: -0.1
-      }
+        lt85: {
+          m: 0.99,
+          c: 0.3
+        },
+        gte85: {
+          m: 0.98,
+          c: -0.1
+        }
+      },
     });
 
     const updateDeviceResponse = await request
@@ -200,9 +224,15 @@ describe('End to end testing of the devices', () => {
       lastMessageAt: messageTime.toISOString(),
       // pm1 should no longer be in here
       pm10: {
-        m: 0.99,
-        c: -0.1
-      }
+        lt85: {
+          m: 0.99,
+          c: 0.3
+        },
+        gte85: {
+          m: 0.98,
+          c: -0.1
+        }
+      },
     });
     
   });
@@ -218,17 +248,17 @@ describe('End to end testing of the devices', () => {
     .set('x-api-key', config.api.key)
     .send({
       pm1: {
-        m: 1.2,
-        c: 0.3
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
       },
       pm2p5: {
-        m: 0.99,
-        c: 0.1
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
       },
       pm10: {
-        m: 1,
-        c: 0
-      }
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     })
     .expect(200);
 
@@ -236,17 +266,17 @@ describe('End to end testing of the devices', () => {
     expect(createdDevice).toEqual({
       id: '123abc',
       pm1: {
-        m: 1.2,
-        c: 0.3
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
       },
       pm2p5: {
-        m: 0.99,
-        c: 0.1
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
       },
       pm10: {
-        m: 1,
-        c: 0
-      }
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     });
 
   });
@@ -296,9 +326,18 @@ describe('End to end testing of the devices', () => {
 
     // Create first device
     await upsertDevice('abc123', {
-      pm1: {m: 1, c: 0.2},
-      pm2p5: {m: 1.1, c: 0.01},
-      pm10: {m: 1.11, c: 0.01},
+      pm1: {
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
+      },
+      pm2p5: {
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
+      },
+      pm10: {
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     });
     // Create second device
     await upsertDevice('def456', {lastMessageAt: new Date('2020-09-21T17:07:33.826Z')});
@@ -311,9 +350,18 @@ describe('End to end testing of the devices', () => {
     expect(response.body).toEqual([
       {
         id: 'abc123',
-        pm1: {m: 1, c: 0.2},
-        pm2p5: {m: 1.1, c: 0.01},
-        pm10: {m: 1.11, c: 0.01},
+        pm1: {
+          lt85: {m: 1.2, c: 0.3},
+          gte85: {m: 1.1, c: 0.2}
+        },
+        pm2p5: {
+          lt85: {m: 0.99, c: 0.3},
+          gte85: {m: 0.98, c: -0.1}
+        },
+        pm10: {
+          lt85: {m: 1, c: 0},
+          gte85: {m: 1.01, c: 0}
+        },
       },
       {
         id: 'def456',

@@ -41,8 +41,14 @@ function uint16ToFloat(value: number, max: number): number {
 }
 
 
-export function applyCalibration(uncorrectedValue: number, calibration: Calibration): number {
-  const correctedValue = (calibration.m * uncorrectedValue) + calibration.c;
+export function applyCalibration(uncorrectedValue: number, humidityValue: number, calibration: Calibration): number {
+  let correctedValue;
+  if (humidityValue < 85) {
+    correctedValue = (calibration.lt85.m * uncorrectedValue) + calibration.lt85.c;
+  } else {
+    correctedValue = (calibration.gte85.m * uncorrectedValue) + calibration.gte85.c;
+  }
+  
   return correctedValue;
 }
 
@@ -96,7 +102,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   }
 
   const uncorrectedFlag = 'raw';
-  const calibrationProcedure = 'arduino-pm-calibration-correction';
+  const calibrationProcedure = 'arduino-pm-calibration-correction-v2';
 
   const observations = [];
   
@@ -106,7 +112,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   const sensorIdLowercase = decodedMessage.device.toLowerCase();
 
   // Temp
-  if (decodedMessage.data.temp) {
+  if (check.assigned(decodedMessage.data.temp)) {
     const tempObs = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-sht85`,
       resultTime,
@@ -121,7 +127,8 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   }
 
   // Humidity
-  if (decodedMessage.data.humid) {
+  const humidityValueExists = check.assigned(decodedMessage.data.humid);
+  if (humidityValueExists) {
     const humidObs = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-sht85`,
       resultTime,
@@ -136,7 +143,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   }
 
   // PM1
-  if (decodedMessage.data.humid) {
+  if (check.assigned(decodedMessage.data.pm1)) {
 
     const pm1Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
@@ -149,11 +156,11 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
       aggregation: 'instant'
     };
 
-    if (pm1Calibration) {
+    if (pm1Calibration && humidityValueExists) {
 
       // Create a corrected observation too
       const pm1ObsCorrected = cloneDeep(pm1Obs);
-      pm1ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm1, pm1Calibration), 2);
+      pm1ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm1, decodedMessage.data.humid, pm1Calibration), 2);
       pm1ObsCorrected.usedProcedures = [calibrationProcedure];
       observations.push(pm1ObsCorrected);
 
@@ -166,7 +173,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   }
 
   // PM2.5
-  if (decodedMessage.data.humid) {
+  if (check.assigned(decodedMessage.data.pm2p5)) {
 
     const pm2p5Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
@@ -179,11 +186,11 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
       aggregation: 'instant'
     };
 
-    if (pm2p5Calibration) {
+    if (pm2p5Calibration && humidityValueExists) {
 
       // Create a corrected observation too
       const p2p5ObsCorrected = cloneDeep(pm2p5Obs);
-      p2p5ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm2p5, pm2p5Calibration), 2);
+      p2p5ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm2p5, decodedMessage.data.humid, pm2p5Calibration), 2);
       p2p5ObsCorrected.usedProcedures = [calibrationProcedure];
       observations.push(p2p5ObsCorrected);
 
@@ -197,7 +204,7 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
   }
 
   // PM10
-  if (decodedMessage.data.humid) {
+  if (check.assigned(decodedMessage.data.pm10)) {
 
     const pm10Obs: any = {
       madeBySensor: `${prefix}-${sensorIdLowercase}-pms5003`,
@@ -210,11 +217,11 @@ export function decodedMessageToObservations(decodedMessage: DecodedMessage, dev
       aggregation: 'instant'
     };
 
-    if (pm10Calibration) {
+    if (pm10Calibration && humidityValueExists) {
 
       // Create a corrected observation too
       const p10ObsCorrected = cloneDeep(pm10Obs);
-      p10ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm10, pm10Calibration), 2);
+      p10ObsCorrected.hasResult.value = round(applyCalibration(decodedMessage.data.pm10, decodedMessage.data.humid, pm10Calibration), 2);
       p10ObsCorrected.usedProcedures = [calibrationProcedure];
       observations.push(p10ObsCorrected);
 

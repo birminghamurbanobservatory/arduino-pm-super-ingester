@@ -64,18 +64,33 @@
     <p>The Particulate Matter readings can be corrected based on calibration results.</p>
     <p>The formula used is: <strong>corrected = (m * raw) + c</strong></p>
     <p>So if m was 1 and c was 0 then the corrected value would be the same as the raw value.</p>
+    <p>We store two sets of m and c values: 
+    <ol>
+      <li>A set for when the humidity is <strong>less than 85%</strong></li>
+      <li>A set for when the humidity is <strong>greater than or equal to 85%</strong></li>
+    </ol>
     <p>Set the m and c values by sending a <strong>POST</strong> request to <a href="/devices/enter-device-id-here">/devices/enter-device-id-here</a>. Replace <em>enter-device-id-here</em> with the ID of the Device you wish to configure e.g. <em>/devices/2AB3CE</em></p>
     <p>Be sure to provide the API key as the <em>x-api-key</em> header.</p>
     <p>And set the <em>Content-Type</em> header as <strong>application/json</strong></p>
     <p>The POST request body should look something like this:</p>
     <pre>
       {
-        "pm1": {"m": 1, "c": 0.2},
-        "pm2p5": {"m": 1.1, "c": 0.01},
-        "pm10": {"m": 1.11, "c": -0.01},
+        "pm1": {
+          "lt85": {"m": 0.99, "c": 0.03},
+          "gte85": {"m": 0.98, "c": 0.08},
+        },
+        "pm2p5": {
+          "lt85": {"m": 1, "c": 0.22},
+          "gte85": {"m": 1, "c": 0},
+        },
+        "pm10": {
+          "lt85": {"m": 1.01, "c": -0.03},
+          "gte85": {"m": 0.99, "c": -0.01},
+        },
       }
     </pre>
-    <p>N.B. you don't have to specify corrections for all of them.</p>
+    <p>Where <em>lt85</em> stands for less than 85% humidity, and <em>gte85</em> standards for greater than or equal to 85% humidity.</p>
+    <p>N.B. you don't have to specify corrections for every variable, e.g. you could just provide corrections for PM10.</p>
     <p>If you ever want to stop corrections being applied then set them to <em>null</em>, for example:</p>
     <pre>
       {

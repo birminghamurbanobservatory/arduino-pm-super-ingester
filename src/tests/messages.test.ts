@@ -121,17 +121,17 @@ describe('Testing messages endpoint', () => {
     .set('x-api-key', config.api.key)
     .send({
       pm1: {
-        m: 1.2,
-        c: 0.3
+        lt85: {m: 1.2, c: 0.3},
+        gte85: {m: 1.1, c: 0.2}
       },
       pm2p5: {
-        m: 0.9,
-        c: 0.3
+        lt85: {m: 0.99, c: 0.3},
+        gte85: {m: 0.98, c: -0.1}
       },
       pm10: {
-        m: 1.1,
-        c: 0.2
-      }
+        lt85: {m: 1, c: 0},
+        gte85: {m: 1.01, c: 0}
+      },
     })
     .expect(200);
 
