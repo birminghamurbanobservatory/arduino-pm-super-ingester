@@ -1,6 +1,6 @@
 {
   "name": "arduino-pm-super-ingester",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Serves a HTTP endpoint to which the Sigfox backend forwards sensor data to. This sensor data is formatted into a Urban Observatory complient format and passed onto the event stream for processing and saving by other microservices.",
   "main": "index.js",
   "scripts": {
